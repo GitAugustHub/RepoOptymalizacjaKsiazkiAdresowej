@@ -146,36 +146,38 @@ void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowane
   czekajNaWcisniecieKlawisza();
 }
 
-vector <Adresat> wczytywanieZnajomychDoStruktury(const string nazwaPliku)
+vector<Adresat> wczytywanieZnajomychDoStruktury(const string nazwaPliku, int idZalogowanegoUzytkownika)
 {
-  vector <Adresat> adresaci;
-  Adresat adresat;
-  string id, idUzytkownika;
-  string liniaZDanymi = "";
-  
-  ifstream plik(nazwaPliku);
+    vector<Adresat> adresaci;
+    Adresat adresat;
+    string id, idUzytkownika;
+    string liniaZDanymi = "";
 
-  // plik.open(nazwaPliku, ios::in | ios::app);
-  if (!plik.is_open()) 
+    ifstream plik(nazwaPliku);
+
+    if (!plik.is_open())
     {
         cerr << "Nie udalo sie otworzyc pliku " << nazwaPliku << endl;
         return adresaci; // Zwrocenie pustego wektora w przypadku błedu
     }
 
-    while (getline (plik, liniaZDanymi)) 
+    while (getline(plik, liniaZDanymi))
     {
         stringstream ss(liniaZDanymi);
         getline(ss, id, '|');
-        adresat.id = atoi(id.c_str());
+        adresat.id = stoi(id);
         getline(ss, idUzytkownika, '|');
-        adresat.idUzytkownika = atoi(idUzytkownika.c_str());
+        adresat.idUzytkownika = stoi(idUzytkownika);
         getline(ss, adresat.imie, '|');
         getline(ss, adresat.nazwisko, '|');
         getline(ss, adresat.nrTelefonu, '|');
         getline(ss, adresat.email, '|');
         getline(ss, adresat.adres, '|');
-        
-    adresaci.push_back(adresat);
+
+        if (adresat.idUzytkownika == idZalogowanegoUzytkownika)
+        {
+            adresaci.push_back(adresat);
+        }
     }
     plik.close();
     return adresaci;
@@ -552,7 +554,7 @@ int main()
   vector <Uzytkownik> uzytkownicy = wczytywanieUzytkownikowDoStruktury(nazwaPlikuZUzytkownikami); 
 
   string nazwaPlikuZPelnaKsiazkaAdresowa = "Ksiazka_adresowa.txt";
-  vector <Adresat> adresaci = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa);
+  vector <Adresat> adresaci = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa, idZalogowanegoUzytkownika);
 
   while(true)
     {
