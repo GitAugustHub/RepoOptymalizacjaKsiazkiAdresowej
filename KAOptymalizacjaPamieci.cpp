@@ -66,10 +66,10 @@ void wyswietlKontakt(Adresat adresat)
     cout << "Adres: " << adresat.adres << endl;
 }
 
-void zapisanieKsiazkiDoPliku(const vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
+void zapisanieKsiazkiDoPliku(const vector <Adresat> &adresaci)
 {
     fstream plik;
-    plik.open("Ksiazka_adresowa.txt", ios::out | ios::trunc); // otwarcie pliku w trybie nadpisywania
+    plik.open("Ksiazka_adresowa.txt", ios::out);
     if (plik.good() == false) 
     {
         cout << "Plik z Twoja ksiazka adresowa nie istnieje!" << endl;
@@ -79,16 +79,13 @@ void zapisanieKsiazkiDoPliku(const vector <Adresat> &adresaci, int idZalogowaneg
     {
         for (int i = 0; i < adresaci.size(); ++i)
         {
-            if (adresaci[i].idUzytkownika == idZalogowanegoUzytkownika) 
-            {
-                plik << adresaci[i].id << "|";
-                plik << adresaci[i].idUzytkownika << "|";
-                plik << adresaci[i].imie << "|";
-                plik << adresaci[i].nazwisko << "|";
-                plik << adresaci[i].nrTelefonu << "|";
-                plik << adresaci[i].email << "|";
-                plik << adresaci[i].adres << "|" << endl;
-            }
+        plik << adresaci[i].id << "|";
+        plik << adresaci[i].idUzytkownika << "|";
+        plik << adresaci[i].imie << "|";
+        plik << adresaci[i].nazwisko << "|";
+        plik << adresaci[i].nrTelefonu << "|";
+        plik << adresaci[i].email << "|";
+        plik << adresaci[i].adres << "|" << endl;
         }
     plik.close();
   }
@@ -143,7 +140,7 @@ void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowane
 
   adresaci.push_back(adresat);
 
-  zapisanieKsiazkiDoPliku(adresaci, idZalogowanegoUzytkownika); 
+  zapisanieKsiazkiDoPliku(adresaci); 
   
   cout << "Dodano do ksiazki adresowej" << endl;
   czekajNaWcisniecieKlawisza();
@@ -310,7 +307,7 @@ void usunAdresataOPodanymId(vector <Adresat> &adresaci, int idZalogowanegoUzytko
         if (itr -> id == id && itr -> idUzytkownika == idZalogowanegoUzytkownika)
         {
             adresaci.erase(itr);
-            zapisanieKsiazkiDoPliku(adresaci, idZalogowanegoUzytkownika);
+            zapisanieKsiazkiDoPliku(adresaci);
             cout << "Adresat zostal usuniety. Nacisnij dowolny klawisz.";
             czekajNaWcisniecieKlawisza();
             znalezionoAdresata = true;
@@ -358,27 +355,27 @@ void edytujAdresata(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
             case '1':
                 cout << "Podaj nowe imie: ";
                 itr -> imie =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci, idZalogowanegoUzytkownika);
+                zapisanieKsiazkiDoPliku(adresaci);
                 break;
             case '2':
                 cout << "Podaj nowe nazwisko: ";
                 itr -> nazwisko =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci, idZalogowanegoUzytkownika);
+                zapisanieKsiazkiDoPliku(adresaci);
                 break;
             case '3':
                 cout << "Podaj nowy numer telefonu: ";
                 itr -> nrTelefonu =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci, idZalogowanegoUzytkownika);
+                zapisanieKsiazkiDoPliku(adresaci);
                 break;
             case '4':
                 cout << "Podaj nowy email: ";
                 itr -> email =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci, idZalogowanegoUzytkownika);
+                zapisanieKsiazkiDoPliku(adresaci);
                 break;
             case '5':
                 cout << "Podaj nowy adres zamieszkania: ";
                 itr -> adres =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci, idZalogowanegoUzytkownika);
+                zapisanieKsiazkiDoPliku(adresaci);
                 break;
             case '6':
                 cout << endl << "Powrot do menu uzytkownika" << endl << endl;
