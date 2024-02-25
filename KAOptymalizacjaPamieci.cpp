@@ -363,35 +363,6 @@ void wyswietlKsiazkeAdresowa(vector <Adresat> &adresaci, int idZalogowanegoUzytk
   czekajNaWcisniecieKlawisza();
 }
 
-// void usunAdresataOPodanymId(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
-// {
-//     int id;
-//     bool znalezionoAdresata = false;
-
-//     cout << "Podaj ID adresata, ktory ma zostac usuniety: ";
-//     cin >> id;
-//     for (vector <Adresat> :: iterator itr = adresaci.begin(); itr != adresaci.end(); itr++)
-//     {
-//         if (itr -> id == id && itr -> idUzytkownika == idZalogowanegoUzytkownika)
-//         {
-//             adresaci.erase(itr);
-//             zapisanieKsiazkiDoPliku(adresaci, id);
-//             cout << "Adresat zostal usuniety. Nacisnij dowolny klawisz.";
-//             czekajNaWcisniecieKlawisza();
-//             znalezionoAdresata = true;
-//             break; 
-//         }
-    
-//     }
-
-//     if (!znalezionoAdresata)
-//     {
-//         cout << "Nie znaleziono adresata o podanym ID w Twojej książce adresowej." << endl;
-//         sleep(3);
-//     }
-    
-// }
-
 void usunAdresataOPodanymId(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
 {
     int idUsuwanegoAdresata;
