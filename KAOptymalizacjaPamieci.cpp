@@ -363,31 +363,107 @@ void wyswietlKsiazkeAdresowa(vector <Adresat> &adresaci, int idZalogowanegoUzytk
   czekajNaWcisniecieKlawisza();
 }
 
+// void usunAdresataOPodanymId(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
+// {
+//     int id;
+//     bool znalezionoAdresata = false;
+
+//     cout << "Podaj ID adresata, ktory ma zostac usuniety: ";
+//     cin >> id;
+//     for (vector <Adresat> :: iterator itr = adresaci.begin(); itr != adresaci.end(); itr++)
+//     {
+//         if (itr -> id == id && itr -> idUzytkownika == idZalogowanegoUzytkownika)
+//         {
+//             adresaci.erase(itr);
+//             zapisanieKsiazkiDoPliku(adresaci, id);
+//             cout << "Adresat zostal usuniety. Nacisnij dowolny klawisz.";
+//             czekajNaWcisniecieKlawisza();
+//             znalezionoAdresata = true;
+//             break; 
+//         }
+    
+//     }
+
+//     if (!znalezionoAdresata)
+//     {
+//         cout << "Nie znaleziono adresata o podanym ID w Twojej książce adresowej." << endl;
+//         sleep(3);
+//     }
+    
+// }
+
 void usunAdresataOPodanymId(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
 {
-    int id;
+    int idUsuwanegoAdresata;
+    string linia;
     bool znalezionoAdresata = false;
 
     cout << "Podaj ID adresata, ktory ma zostac usuniety: ";
-    cin >> id;
-    for (vector <Adresat> :: iterator itr = adresaci.begin(); itr != adresaci.end(); itr++)
-    {
-        if (itr -> id == id && itr -> idUzytkownika == idZalogowanegoUzytkownika)
-        {
-            adresaci.erase(itr);
-            zapisanieKsiazkiDoPliku(adresaci, id);
-            cout << "Adresat zostal usuniety. Nacisnij dowolny klawisz.";
-            czekajNaWcisniecieKlawisza();
-            znalezionoAdresata = true;
-            break; 
-        }
+    cin >> idUsuwanegoAdresata;
     
+    ifstream plikOryginalny("Ksiazka_adresowa.txt");
+    ofstream plikTymczasowy("Adresaci_tymczasowy.txt");
+
+    if (!plikOryginalny.is_open())
+    {
+        cerr << "Nie udalo sie otworzyc pliku oryginalnego" << endl;
+        return;
+    }
+
+    while (getline(plikOryginalny, linia))
+    {
+        stringstream ss(linia);
+        string idString;
+        Adresat edytowanyAdresat;
+
+        getline(ss, idString, '|');
+        int id = stoi(idString);
+        getline(ss, idString, '|');
+        int idUzytkownika = stoi(idString);
+
+        if (id == idUsuwanegoAdresata && idUzytkownika == idZalogowanegoUzytkownika)
+        {
+            for (vector <Adresat> :: iterator itr = adresaci.begin(); itr != adresaci.end(); itr++)
+            {
+                if (itr -> id == id && itr -> idUzytkownika == idZalogowanegoUzytkownika)
+                {
+                    adresaci.erase(itr);
+                    znalezionoAdresata = true;
+                    break; 
+                }
+            }
+        }
+        else
+        {
+            // Zapisujemy linie z danymi adresatow innych uzytkownikow
+            plikTymczasowy << linia << endl;
+        }
+    }
+
+    plikOryginalny.close();
+    plikTymczasowy.close();
+
+    if (remove("Ksiazka_adresowa.txt") != 0)
+    {
+        cerr << "Nie udalo sie usunac oryginalnego pliku" << endl;
+        return;
+    }
+
+    if (rename("Adresaci_tymczasowy.txt", "Ksiazka_adresowa.txt") != 0)
+    {
+        cerr << "Nie udalo sie zmienic nazwy tymczasowego pliku" << endl;
+        return;
     }
 
     if (!znalezionoAdresata)
     {
         cout << "Nie znaleziono adresata o podanym ID w Twojej książce adresowej." << endl;
         sleep(3);
+    }
+    else
+    {
+        cout << "Usunieto wybranego adresata" << endl;
+        sleep(3); 
     }
     
 }
