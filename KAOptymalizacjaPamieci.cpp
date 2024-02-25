@@ -66,29 +66,82 @@ void wyswietlKontakt(Adresat adresat)
     cout << "Adres: " << adresat.adres << endl;
 }
 
-void zapisanieKsiazkiDoPliku(const vector <Adresat> &adresaci)
+void zapisanieKsiazkiDoPliku(const vector <Adresat> &adresaci, int idEdytowanegoAdresata)
 {
-    fstream plik;
-    plik.open("Ksiazka_adresowa.txt", ios::out);
-    if (plik.good() == false) 
+    string linia;
+    bool czyEdytowany = false;
+    
+    ifstream plikOryginalny("Ksiazka_adresowa.txt");
+    ofstream plikTymczasowy("Adresaci_tymczasowy.txt");
+
+    if (!plikOryginalny.is_open())
     {
-        cout << "Plik z Twoja ksiazka adresowa nie istnieje!" << endl;
-        czekajNaWcisniecieKlawisza();
-    }  
-    else 
+        cerr << "Nie udalo sie otworzyc pliku oryginalnego" << endl;
+        return;
+    }
+
+    while (getline(plikOryginalny, linia))
     {
-        for (int i = 0; i < adresaci.size(); ++i)
+        stringstream ss(linia);
+        string idString;
+        Adresat edytowanyAdresat;
+        getline(ss, idString, '|');
+        int id = stoi(idString);
+
+        if (id == idEdytowanegoAdresata)
         {
-        plik << adresaci[i].id << "|";
-        plik << adresaci[i].idUzytkownika << "|";
-        plik << adresaci[i].imie << "|";
-        plik << adresaci[i].nazwisko << "|";
-        plik << adresaci[i].nrTelefonu << "|";
-        plik << adresaci[i].email << "|";
-        plik << adresaci[i].adres << "|" << endl;
+            if (!czyEdytowany)
+            {
+                // Edytujemy linię dla adresata o danym ID
+                
+                for (const Adresat &adresat : adresaci)
+                {
+                    if (adresat.id == idEdytowanegoAdresata)
+                    {
+                        edytowanyAdresat = adresat;
+                        break;
+                    }
+                }
+                plikTymczasowy << edytowanyAdresat.id << "|"
+                               << edytowanyAdresat.idUzytkownika << "|"
+                               << edytowanyAdresat.imie << "|"
+                               << edytowanyAdresat.nazwisko << "|"
+                               << edytowanyAdresat.nrTelefonu << "|"
+                               << edytowanyAdresat.email << "|"
+                               << edytowanyAdresat.adres << "|" << endl;
+
+                czyEdytowany = true;
+            }
+            else
+            {
+                // Pomijamy linię, bo już edytowaliśmy adresata
+                plikTymczasowy << linia << endl;
+            }
         }
-    plik.close();
-  }
+        else
+        {
+            // Zapisujemy linie z danymi adresatow innych uzytkownikow
+            plikTymczasowy << linia << endl;
+        }
+    }
+
+    plikOryginalny.close();
+    plikTymczasowy.close();
+
+    if (remove("Ksiazka_adresowa.txt") != 0)
+    {
+        cerr << "Nie udalo sie usunac oryginalnego pliku" << endl;
+        return;
+    }
+
+    if (rename("Adresaci_tymczasowy.txt", "Ksiazka_adresowa.txt") != 0)
+    {
+        cerr << "Nie udalo sie zmienic nazwy tymczasowego pliku" << endl;
+        return;
+    }
+
+    cout << "Zaktualizowano plik z danymi" << endl;
+    sleep(3);
 }
 
 void zapisanieUzytkownikaDoPliku(const vector <Uzytkownik> &uzytkownicy)
@@ -140,7 +193,7 @@ void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowane
 
   adresaci.push_back(adresat);
 
-  zapisanieKsiazkiDoPliku(adresaci); 
+  zapisanieKsiazkiDoPliku(adresaci, adresat.id); 
   
   cout << "Dodano do ksiazki adresowej" << endl;
   czekajNaWcisniecieKlawisza();
@@ -307,7 +360,7 @@ void usunAdresataOPodanymId(vector <Adresat> &adresaci, int idZalogowanegoUzytko
         if (itr -> id == id && itr -> idUzytkownika == idZalogowanegoUzytkownika)
         {
             adresaci.erase(itr);
-            zapisanieKsiazkiDoPliku(adresaci);
+            zapisanieKsiazkiDoPliku(adresaci, id);
             cout << "Adresat zostal usuniety. Nacisnij dowolny klawisz.";
             czekajNaWcisniecieKlawisza();
             znalezionoAdresata = true;
@@ -355,27 +408,27 @@ void edytujAdresata(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
             case '1':
                 cout << "Podaj nowe imie: ";
                 itr -> imie =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci);
+                zapisanieKsiazkiDoPliku(adresaci, idWybranegoAdresata);
                 break;
             case '2':
                 cout << "Podaj nowe nazwisko: ";
                 itr -> nazwisko =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci);
+                zapisanieKsiazkiDoPliku(adresaci, idWybranegoAdresata);
                 break;
             case '3':
                 cout << "Podaj nowy numer telefonu: ";
                 itr -> nrTelefonu =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci);
+                zapisanieKsiazkiDoPliku(adresaci, idWybranegoAdresata);
                 break;
             case '4':
                 cout << "Podaj nowy email: ";
                 itr -> email =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci);
+                zapisanieKsiazkiDoPliku(adresaci, idWybranegoAdresata);
                 break;
             case '5':
                 cout << "Podaj nowy adres zamieszkania: ";
                 itr -> adres =  wczytajLinie();
-                zapisanieKsiazkiDoPliku(adresaci);
+                zapisanieKsiazkiDoPliku(adresaci, idWybranegoAdresata);
                 break;
             case '6':
                 cout << endl << "Powrot do menu uzytkownika" << endl << endl;
@@ -546,6 +599,8 @@ void rejestracjaNowegoUzytkownika(vector <Uzytkownik> &uzytkownicy)
   czekajNaWcisniecieKlawisza();
 }
 
+void zapisanieKsiazkiDoPliku(const vector <Adresat> &adresaci, int idEdytowanegoAdresata);
+
 int main()
 {
   char wybor;
@@ -554,7 +609,6 @@ int main()
   vector <Uzytkownik> uzytkownicy = wczytywanieUzytkownikowDoStruktury(nazwaPlikuZUzytkownikami); 
 
   string nazwaPlikuZPelnaKsiazkaAdresowa = "Ksiazka_adresowa.txt";
-  vector <Adresat> adresaci = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa, idZalogowanegoUzytkownika);
 
   while(true)
     {
@@ -573,6 +627,7 @@ int main()
             idZalogowanegoUzytkownika = logowanieUzytkownika(uzytkownicy);
             if (idZalogowanegoUzytkownika > 0)
             {
+                vector <Adresat> adresaci = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa, idZalogowanegoUzytkownika);
                 uruchomienieKsiazkiAdresowej(uzytkownicy, adresaci, idZalogowanegoUzytkownika);
             }
             break;
