@@ -165,7 +165,7 @@ void zapisanieUzytkownikaDoPliku(const vector <Uzytkownik> &uzytkownicy)
   }
 }
 
-void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika, int idOstatniegoAdresata)
+int dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika, int idOstatniegoAdresata)
 {
   Adresat adresat;
   string imie, nazwisko, nrTelefonu, email, adres;
@@ -179,7 +179,7 @@ void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowane
   {
     adresat.id = idOstatniegoAdresata + 1;
   }
-  adresat.idUzytkownika = idZalogowanegoUzytkownika;
+  adresat.idUzytkownika = idZalogowanegoUzytkownika; 
   cout << "Podaj imie: "; 
   adresat.imie = wczytajLinie();
   cout << "Podaj nazwisko: "; 
@@ -193,10 +193,23 @@ void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowane
 
   adresaci.push_back(adresat);
 
-  zapisanieKsiazkiDoPliku(adresaci, adresat.id); 
+  ofstream plik("Ksiazka_adresowa.txt", ios::app); // Otwarcie pliku w trybie dodawania tekstu
+
+    if (!plik.is_open())
+    {
+        cerr << "Nie udalo sie otworzyc pliku Ksiazka_adresowa.txt" << endl;
+        return idOstatniegoAdresata;
+    }
+
+    plik << adresat.id << "|" << adresat.idUzytkownika << "|" << adresat.imie << "|"
+         << adresat.nazwisko << "|" << adresat.nrTelefonu << "|" << adresat.email << "|" << adresat.adres << "|" << endl;
+
+    plik.close();
   
   cout << "Dodano do ksiazki adresowej" << endl;
   czekajNaWcisniecieKlawisza();
+
+  return adresat.id;
 }
 
 pair < vector <Adresat>, int >  wczytywanieZnajomychDoStruktury(const string nazwaPliku, int idZalogowanegoUzytkownika)
@@ -543,7 +556,7 @@ void uruchomienieKsiazkiAdresowej(vector <Uzytkownik> &uzytkownicy, vector<Adres
       switch (wybor)
       {
         case '1':
-            dodanieOsobyDoKsiazkiAdresowej(adresaci, idZalogowanegoUzytkownika, idOstatniegoAdresata);
+            idOstatniegoAdresata = dodanieOsobyDoKsiazkiAdresowej(adresaci, idZalogowanegoUzytkownika, idOstatniegoAdresata);
             break;
         case '2':
             wyszukajOsobePoImieniu(adresaci, idZalogowanegoUzytkownika);
@@ -632,7 +645,10 @@ int main()
             idZalogowanegoUzytkownika = logowanieUzytkownika(uzytkownicy);
             if (idZalogowanegoUzytkownika > 0)
             {
-                tie(adresaci, idOstatniegoAdresata)  = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa, idZalogowanegoUzytkownika);
+                pair < vector<Adresat>, int > wynik = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa, idZalogowanegoUzytkownika);
+                adresaci = wynik.first;
+                idOstatniegoAdresata = wynik.second;
+
                 uruchomienieKsiazkiAdresowej(uzytkownicy, adresaci, idZalogowanegoUzytkownika, idOstatniegoAdresata);
             }
             break;
