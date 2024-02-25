@@ -165,19 +165,19 @@ void zapisanieUzytkownikaDoPliku(const vector <Uzytkownik> &uzytkownicy)
   }
 }
 
-void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika)
+void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowanegoUzytkownika, int idOstatniegoAdresata)
 {
   Adresat adresat;
   string imie, nazwisko, nrTelefonu, email, adres;
   czyscEkran();
 
-  if (adresaci.empty() == true)
+  if (idOstatniegoAdresata == 0)
   {
     adresat.id = 1;
   }
   else
   {
-    adresat.id = adresaci.back().id + 1;
+    adresat.id = idOstatniegoAdresata + 1;
   }
   adresat.idUzytkownika = idZalogowanegoUzytkownika;
   cout << "Podaj imie: "; 
@@ -199,19 +199,20 @@ void dodanieOsobyDoKsiazkiAdresowej(vector <Adresat> &adresaci, int idZalogowane
   czekajNaWcisniecieKlawisza();
 }
 
-vector<Adresat> wczytywanieZnajomychDoStruktury(const string nazwaPliku, int idZalogowanegoUzytkownika)
+pair < vector <Adresat>, int >  wczytywanieZnajomychDoStruktury(const string nazwaPliku, int idZalogowanegoUzytkownika)
 {
-    vector<Adresat> adresaci;
+    vector <Adresat> adresaci;
     Adresat adresat;
     string id, idUzytkownika;
     string liniaZDanymi = "";
+    int idOstatniegoAdresata = 0;
 
     ifstream plik(nazwaPliku);
 
     if (!plik.is_open())
     {
         cerr << "Nie udalo sie otworzyc pliku " << nazwaPliku << endl;
-        return adresaci; // Zwrocenie pustego wektora w przypadku błedu
+        return make_pair(adresaci, idOstatniegoAdresata); // Zwrocenie pustego wektora w przypadku błedu
     }
 
     while (getline(plik, liniaZDanymi))
@@ -219,6 +220,7 @@ vector<Adresat> wczytywanieZnajomychDoStruktury(const string nazwaPliku, int idZ
         stringstream ss(liniaZDanymi);
         getline(ss, id, '|');
         adresat.id = stoi(id);
+        idOstatniegoAdresata = adresat.id;
         getline(ss, idUzytkownika, '|');
         adresat.idUzytkownika = stoi(idUzytkownika);
         getline(ss, adresat.imie, '|');
@@ -233,7 +235,7 @@ vector<Adresat> wczytywanieZnajomychDoStruktury(const string nazwaPliku, int idZ
         }
     }
     plik.close();
-    return adresaci;
+    return make_pair(adresaci, idOstatniegoAdresata);
 }
 
 vector <Uzytkownik> wczytywanieUzytkownikowDoStruktury(const string nazwaPliku)
@@ -516,7 +518,7 @@ int logowanieUzytkownika(vector <Uzytkownik> &uzytkownicy)
     return idZalogowanegoUzytkownika;
 }
 
-void uruchomienieKsiazkiAdresowej(vector <Uzytkownik> &uzytkownicy, vector<Adresat> &adresaci, int idZalogowanegoUzytkownika) 
+void uruchomienieKsiazkiAdresowej(vector <Uzytkownik> &uzytkownicy, vector<Adresat> &adresaci, int idZalogowanegoUzytkownika, int idOstatniegoAdresata) 
 { 
   char wybor;
   string nazwaPliku = "Ksiazka_adresowa.txt";
@@ -541,7 +543,7 @@ void uruchomienieKsiazkiAdresowej(vector <Uzytkownik> &uzytkownicy, vector<Adres
       switch (wybor)
       {
         case '1':
-            dodanieOsobyDoKsiazkiAdresowej(adresaci, idZalogowanegoUzytkownika);
+            dodanieOsobyDoKsiazkiAdresowej(adresaci, idZalogowanegoUzytkownika, idOstatniegoAdresata);
             break;
         case '2':
             wyszukajOsobePoImieniu(adresaci, idZalogowanegoUzytkownika);
@@ -599,13 +601,16 @@ void rejestracjaNowegoUzytkownika(vector <Uzytkownik> &uzytkownicy)
   czekajNaWcisniecieKlawisza();
 }
 
+// ponownie definiuje funkcje bo kompilator jej nie widzial i sugerowal blad
 void zapisanieKsiazkiDoPliku(const vector <Adresat> &adresaci, int idEdytowanegoAdresata);
 
 int main()
 {
   char wybor;
   int idZalogowanegoUzytkownika;
+  int idOstatniegoAdresata = 0;
   string nazwaPlikuZUzytkownikami = "Uzytkownicy.txt";
+  vector <Adresat> adresaci;
   vector <Uzytkownik> uzytkownicy = wczytywanieUzytkownikowDoStruktury(nazwaPlikuZUzytkownikami); 
 
   string nazwaPlikuZPelnaKsiazkaAdresowa = "Ksiazka_adresowa.txt";
@@ -627,8 +632,8 @@ int main()
             idZalogowanegoUzytkownika = logowanieUzytkownika(uzytkownicy);
             if (idZalogowanegoUzytkownika > 0)
             {
-                vector <Adresat> adresaci = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa, idZalogowanegoUzytkownika);
-                uruchomienieKsiazkiAdresowej(uzytkownicy, adresaci, idZalogowanegoUzytkownika);
+                tie(adresaci, idOstatniegoAdresata)  = wczytywanieZnajomychDoStruktury(nazwaPlikuZPelnaKsiazkaAdresowa, idZalogowanegoUzytkownika);
+                uruchomienieKsiazkiAdresowej(uzytkownicy, adresaci, idZalogowanegoUzytkownika, idOstatniegoAdresata);
             }
             break;
         case '2':
